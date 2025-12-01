@@ -33,21 +33,34 @@ st.set_page_config(page_title="서울시 물 수요 예측 대시보드", layout
 def load_data_and_model():
     # 데이터 로드 (절대 경로 사용 - 상위 폴더로 이동)
     import os
-    # 현재 파일(app.py)의 위치: .../src/app.py
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # 상위 폴더(루트)로 이동: .../src/../ -> .../
-    root_dir = os.path.dirname(current_dir)
-    # 데이터 파일 경로: .../data/anfis_dataset_with_covid.csv
-    data_path = os.path.join(root_dir, 'data', 'anfis_dataset_with_covid.csv')
     
-    # 디버깅용 출력 (로그 확인용)
-    print(f"Loading data from: {data_path}")
+    # 1. 현재 파일(app.py)의 절대 경로를 구합니다.
+    # 예: /mount/src/dbms-water-demand-forecasting/src/app.py
+    current_file_path = os.path.abspath(__file__)
     
-    # 만약 파일이 없다면, 현재 작업 디렉토리 기준으로 다시 시도 (Streamlit Cloud 특성 고려)
+    # 2. 현재 파일이 있는 폴더(src)의 경로를 구합니다.
+    # 예: /mount/src/dbms-water-demand-forecasting/src
+    src_dir = os.path.dirname(current_file_path)
+    
+    # 3. 프로젝트 루트 폴더(src의 상위 폴더)의 경로를 구합니다.
+    # 예: /mount/src/dbms-water-demand-forecasting
+    project_root = os.path.dirname(src_dir)
+    
+    # 4. 데이터 파일의 절대 경로를 생성합니다.
+    # 예: /mount/src/dbms-water-demand-forecasting/data/anfis_dataset_with_covid.csv
+    data_path = os.path.join(project_root, 'data', 'anfis_dataset_with_covid.csv')
+    
+    # 디버깅용 출력
+    print(f"Current file: {current_file_path}")
+    print(f"Project root: {project_root}")
+    print(f"Target data path: {data_path}")
+    
     if not os.path.exists(data_path):
-        print(f"File not found at {data_path}. Trying relative path...")
-        data_path = 'data/anfis_dataset_with_covid.csv'
-    
+        print(f"ERROR: File not found at {data_path}")
+        # 혹시 모를 경우를 대비해 현재 작업 디렉토리 기준 상대 경로도 시도
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"Files in current directory: {os.listdir(os.getcwd())}")
+        
     df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     feature_cols = ['Temperature', 'Precipitation', 'population_norm', 
                    'Prev_Demand', 'effective_fee_adjusted', 'month_sin', 'month_cos']
