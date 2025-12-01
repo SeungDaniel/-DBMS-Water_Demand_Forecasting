@@ -34,32 +34,28 @@ def load_data_and_model():
     # 데이터 로드 (절대 경로 사용 - 상위 폴더로 이동)
     import os
     
-    # 1. 현재 파일(app.py)의 절대 경로를 구합니다.
-    # 예: /mount/src/dbms-water-demand-forecasting/src/app.py
-    current_file_path = os.path.abspath(__file__)
+    # 데이터 로드
+    import os
     
-    # 2. 현재 파일이 있는 폴더(src)의 경로를 구합니다.
-    # 예: /mount/src/dbms-water-demand-forecasting/src
-    src_dir = os.path.dirname(current_file_path)
+    # 로그 분석 결과:
+    # Current working directory: /mount/src/-dbms-water_demand_forecasting
+    # Files in current directory: ['README.md', 'src', 'README_KR.md', '.git', 'docs', '.gitignore', 'results', 'requirements.txt', 'packages.txt', 'data', 'README_EN.md']
     
-    # 3. 프로젝트 루트 폴더(src의 상위 폴더)의 경로를 구합니다.
-    # 예: /mount/src/dbms-water-demand-forecasting
-    project_root = os.path.dirname(src_dir)
+    # 결론: 작업 디렉토리가 이미 프로젝트 루트입니다.
+    # 따라서 'data/anfis_dataset_with_covid.csv'로 바로 접근하면 됩니다.
     
-    # 4. 데이터 파일의 절대 경로를 생성합니다.
-    # 예: /mount/src/dbms-water-demand-forecasting/data/anfis_dataset_with_covid.csv
-    data_path = os.path.join(project_root, 'data', 'anfis_dataset_with_covid.csv')
+    data_path = 'data/anfis_dataset_with_covid.csv'
     
     # 디버깅용 출력
-    print(f"Current file: {current_file_path}")
-    print(f"Project root: {project_root}")
-    print(f"Target data path: {data_path}")
+    print(f"Loading data from: {data_path}")
+    print(f"Current working directory: {os.getcwd()}")
     
     if not os.path.exists(data_path):
-        print(f"ERROR: File not found at {data_path}")
-        # 혹시 모를 경우를 대비해 현재 작업 디렉토리 기준 상대 경로도 시도
-        print(f"Current working directory: {os.getcwd()}")
-        print(f"Files in current directory: {os.listdir(os.getcwd())}")
+        # 만약 그래도 없다면 절대 경로로 시도 (비상용)
+        current_file_path = os.path.abspath(__file__)
+        project_root = os.path.dirname(os.path.dirname(current_file_path))
+        data_path = os.path.join(project_root, 'data', 'anfis_dataset_with_covid.csv')
+        print(f"Retry with absolute path: {data_path}")
         
     df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     feature_cols = ['Temperature', 'Precipitation', 'population_norm', 
