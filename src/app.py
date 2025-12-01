@@ -7,8 +7,23 @@ from xgboost import XGBRegressor
 from sklearn.preprocessing import StandardScaler
 import joblib
 
-# 한글 폰트 설정 (Streamlit Cloud에서는 별도 설정 필요할 수 있음)
-plt.rcParams['font.family'] = 'AppleGothic'
+# 한글 폰트 설정
+import platform
+system_name = platform.system()
+
+if system_name == 'Darwin': # Mac
+    plt.rc('font', family='AppleGothic')
+elif system_name == 'Windows': # Windows
+    plt.rc('font', family='Malgun Gothic')
+else: # Linux (Streamlit Cloud)
+    # 리눅스에서는 나눔글꼴 설치가 필요할 수 있음
+    # 우분투: sudo apt-get install fonts-nanum
+    # Streamlit Cloud: packages.txt에 fonts-nanum 추가
+    try:
+        plt.rc('font', family='NanumGothic')
+    except:
+        plt.rc('font', family='DejaVu Sans') # Fallback
+
 plt.rcParams['axes.unicode_minus'] = False
 sns.set_style("whitegrid")
 
