@@ -16,13 +16,29 @@ if system_name == 'Darwin': # Mac
 elif system_name == 'Windows': # Windows
     plt.rc('font', family='Malgun Gothic')
 else: # Linux (Streamlit Cloud)
-    # 리눅스에서는 나눔글꼴 설치가 필요할 수 있음
-    # 우분투: sudo apt-get install fonts-nanum
-    # Streamlit Cloud: packages.txt에 fonts-nanum 추가
-    try:
-        plt.rc('font', family='NanumGothic')
-    except:
-        plt.rc('font', family='DejaVu Sans') # Fallback
+    import matplotlib.font_manager as fm
+    import os
+    
+    # 폰트 파일 경로 리스트 (가능한 경로들)
+    font_paths = [
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+        '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf',
+        '/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf'
+    ]
+    
+    font_found = False
+    for path in font_paths:
+        if os.path.exists(path):
+            fm.fontManager.addfont(path)
+            font_prop = fm.FontProperties(fname=path)
+            plt.rc('font', family=font_prop.get_name())
+            font_found = True
+            print(f"Font found and set: {path}")
+            break
+            
+    if not font_found:
+        print("Nanum font not found. Using fallback.")
+        plt.rc('font', family='DejaVu Sans')
 
 plt.rcParams['axes.unicode_minus'] = False
 sns.set_style("whitegrid")
