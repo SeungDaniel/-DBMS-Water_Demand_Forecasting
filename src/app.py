@@ -43,6 +43,11 @@ def load_data_and_model():
     # 디버깅용 출력 (로그 확인용)
     print(f"Loading data from: {data_path}")
     
+    # 만약 파일이 없다면, 현재 작업 디렉토리 기준으로 다시 시도 (Streamlit Cloud 특성 고려)
+    if not os.path.exists(data_path):
+        print(f"File not found at {data_path}. Trying relative path...")
+        data_path = 'data/anfis_dataset_with_covid.csv'
+    
     df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     feature_cols = ['Temperature', 'Precipitation', 'population_norm', 
                    'Prev_Demand', 'effective_fee_adjusted', 'month_sin', 'month_cos']
