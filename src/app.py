@@ -31,8 +31,11 @@ st.set_page_config(page_title="서울시 물 수요 예측 대시보드", layout
 
 @st.cache_resource
 def load_data_and_model():
-    # 데이터 로드
-    df = pd.read_csv('data/anfis_dataset_with_covid.csv', index_col=0, parse_dates=True)
+    # 데이터 로드 (절대 경로 사용)
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(base_dir, '../data/anfis_dataset_with_covid.csv')
+    df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     feature_cols = ['Temperature', 'Precipitation', 'population_norm', 
                    'Prev_Demand', 'effective_fee_adjusted', 'month_sin', 'month_cos']
     df = df.dropna(subset=feature_cols + ['Current_Demand'])
