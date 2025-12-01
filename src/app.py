@@ -103,16 +103,84 @@ def load_data_and_model():
     
     return model, scaler_X, df, feature_cols
 
+# 다국어 지원 딕셔너리
+TEXT = {
+    'KR': {
+        'page_title': "서울시 물 수요 예측 대시보드",
+        'main_title': "💧 서울시 물 수요 예측 & 정책 시뮬레이터",
+        'sidebar_lang': "언어 선택 (Language)",
+        'sidebar_scenario': "정책 시나리오 설정",
+        'slider_price': "요금 변동률 (%)",
+        'sidebar_period': "예측 기간 설정",
+        'slider_period': "향후 예측 기간 (년)",
+        'subheader_forecast': "향후 {}년 물 수요 예측",
+        'plot_title': "장기 물 수요 예측",
+        'plot_ylabel': "수요량 (㎥)",
+        'legend_actual': "2024년 (실제)",
+        'legend_pred': "예측 (요금 {:+.0f}%)",
+        'subheader_total': "기간 총 수요 예측",
+        'metric_label': "향후 {}년 총 수요",
+        'unit_100m': " 억톤",
+        'unit_10k': " 만톤",
+        'info_title': "**적용된 모델 로직 (Hybrid)**",
+        'info_item1': "1. **XGBoost**: 계절/날씨 기반 기본 수요 예측",
+        'info_item2': "2. **Econometrics**: 요금 탄력성({}) 적용",
+        'info_result': "요금을 **{}%** 조정하면,\n수요는 **{:.2f}%** 변동합니다."
+    },
+    'EN': {
+        'page_title': "Seoul Water Demand Forecasting Dashboard",
+        'main_title': "💧 Seoul Water Demand Forecasting & Policy Simulator",
+        'sidebar_lang': "Language Selection",
+        'sidebar_scenario': "Policy Scenario Settings",
+        'slider_price': "Price Change Rate (%)",
+        'sidebar_period': "Forecast Period Settings",
+        'slider_period': "Forecast Horizon (Years)",
+        'subheader_forecast': "Water Demand Forecast for Next {} Years",
+        'plot_title': "Long-term Water Demand Forecast",
+        'plot_ylabel': "Demand (㎥)",
+        'legend_actual': "2024 (Actual)",
+        'legend_pred': "Forecast (Price {:+.0f}%)",
+        'subheader_total': "Total Demand for Period",
+        'metric_label': "Total Demand for Next {} Years",
+        'unit_100m': "00M tons",
+        'unit_10k': "0k tons",
+        'info_title': "**Applied Model Logic (Hybrid)**",
+        'info_item1': "1. **XGBoost**: Baseline demand prediction based on seasonality/weather",
+        'info_item2': "2. **Econometrics**: Price elasticity ({}) applied",
+        'info_result': "Adjusting price by **{}%** results in\na **{:.2f}%** change in demand."
+    }
+}
+
 def main():
-    st.title("💧 서울시 물 수요 예측 & 정책 시뮬레이터")
+    # 언어 선택 (기본값: KR)
+    if 'lang' not in st.session_state:
+        st.session_state.lang = 'KR'
+        
+    st.set_page_config(page_title=TEXT[st.session_state.lang]['page_title'], layout="wide")
+    
+    # 사이드바에서 언어 선택
+    lang_option = st.sidebar.selectbox(
+        TEXT[st.session_state.lang]['sidebar_lang'],
+        ('한국어 (Korean)', 'English'),
+        index=0 if st.session_state.lang == 'KR' else 1
+    )
+    
+    if lang_option == '한국어 (Korean)':
+        st.session_state.lang = 'KR'
+    else:
+        st.session_state.lang = 'EN'
+        
+    t = TEXT[st.session_state.lang] # 현재 언어 팩
+    
+    st.title(t['main_title'])
     st.markdown("---")
     
     # 사이드바 설정
-    st.sidebar.header("정책 시나리오 설정")
-    price_change = st.sidebar.slider("요금 변동률 (%)", -30, 30, 0, 5)
+    st.sidebar.header(t['sidebar_scenario'])
+    price_change = st.sidebar.slider(t['slider_price'], -30, 30, 0, 5)
     
-    st.sidebar.header("예측 기간 설정")
-    forecast_years = st.sidebar.slider("향후 예측 기간 (년)", 1, 10, 1)
+    st.sidebar.header(t['sidebar_period'])
+    forecast_years = st.sidebar.slider(t['slider_period'], 1, 10, 1)
     
     # 모델 로드
     model, scaler_X, df, feature_cols = load_data_and_model()
@@ -121,7 +189,6 @@ def main():
     elasticity = -0.0621
     
     # 미래 데이터 생성 (2024년 데이터 반복 사용 - 단순 가정)
-    # 실제로는 기후 변화 시나리오 등을 반영해야 하지만, 여기서는 패턴 반복으로 가정
     last_year_data = df[df.index.year == 2024].copy()
     future_data_list = []
     
@@ -145,25 +212,25 @@ def main():
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader(f"향후 {forecast_years}년 물 수요 예측")
+        st.subheader(t['subheader_forecast'].format(forecast_years))
         fig, ax = plt.subplots(figsize=(10, 5))
         
         # 2024년 실제값 (참고용)
         ax.plot(last_year_data.index, last_year_data['Current_Demand'], 
-                'k:', label='2024년 (실제)', alpha=0.5)
+                'k:', label=t['legend_actual'], alpha=0.5)
         
         # 미래 예측값
         ax.plot(future_df.index, final_demand, 
-                'r-', label=f'예측 (요금 {price_change:+.0f}%)', linewidth=2)
+                'r-', label=t['legend_pred'].format(price_change), linewidth=2)
         
-        ax.set_title("장기 물 수요 예측")
-        ax.set_ylabel("수요량 (㎥)")
+        ax.set_title(t['plot_title'])
+        ax.set_ylabel(t['plot_ylabel'])
         ax.legend()
         ax.grid(True, alpha=0.3)
         st.pyplot(fig)
         
     with col2:
-        st.subheader("기간 총 수요 예측")
+        st.subheader(t['subheader_total'])
         total_demand = final_demand.sum()
         base_total = base_demand_pred.sum()
         
@@ -171,19 +238,18 @@ def main():
         delta_pct = (delta / base_total) * 100
         
         st.metric(
-            label=f"향후 {forecast_years}년 총 수요",
-            value=f"{total_demand/1e8:.2f} 억톤",
-            delta=f"{delta/1e4:,.0f} 만톤 ({delta_pct:+.2f}%)",
+            label=t['metric_label'].format(forecast_years),
+            value=f"{total_demand/1e8:.2f}{t['unit_100m']}",
+            delta=f"{delta/1e4:,.0f}{t['unit_10k']} ({delta_pct:+.2f}%)",
             delta_color="inverse"
         )
         
         st.info(f"""
-        **적용된 모델 로직 (Hybrid)**
-        1. **XGBoost**: 계절/날씨 기반 기본 수요 예측
-        2. **Econometrics**: 요금 탄력성({elasticity}) 적용
+        {t['info_title']}
+        {t['info_item1']}
+        {t['info_item2'].format(elasticity)}
         
-        요금을 **{price_change}%** 조정하면,
-        수요는 **{demand_change_pct*100:.2f}%** 변동합니다.
+        {t['info_result'].format(price_change, demand_change_pct*100)}
         """)
 
 if __name__ == "__main__":
