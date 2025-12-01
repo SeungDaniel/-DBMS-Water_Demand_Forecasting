@@ -31,10 +31,18 @@ st.set_page_config(page_title="서울시 물 수요 예측 대시보드", layout
 
 @st.cache_resource
 def load_data_and_model():
-    # 데이터 로드 (절대 경로 사용)
+    # 데이터 로드 (절대 경로 사용 - 상위 폴더로 이동)
     import os
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(base_dir, '../data/anfis_dataset_with_covid.csv')
+    # 현재 파일(app.py)의 위치: .../src/app.py
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 상위 폴더(루트)로 이동: .../src/../ -> .../
+    root_dir = os.path.dirname(current_dir)
+    # 데이터 파일 경로: .../data/anfis_dataset_with_covid.csv
+    data_path = os.path.join(root_dir, 'data', 'anfis_dataset_with_covid.csv')
+    
+    # 디버깅용 출력 (로그 확인용)
+    print(f"Loading data from: {data_path}")
+    
     df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     feature_cols = ['Temperature', 'Precipitation', 'population_norm', 
                    'Prev_Demand', 'effective_fee_adjusted', 'month_sin', 'month_cos']
