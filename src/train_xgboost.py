@@ -12,9 +12,25 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 
 # 한글 폰트 설정
-plt.rcParams['font.family'] = 'AppleGothic'
-plt.rcParams['axes.unicode_minus'] = False
+import platform
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 sns.set_style("whitegrid")
+
+system_name = platform.system()
+
+if system_name == 'Darwin': # Mac
+    plt.rc('font', family='AppleGothic')
+elif system_name == 'Windows': # Windows
+    plt.rc('font', family='Malgun Gothic')
+else: # Linux
+    try:
+        plt.rc('font', family='NanumGothic')
+    except:
+        plt.rc('font', family='DejaVu Sans')
+
+plt.rcParams['axes.unicode_minus'] = False
 
 def evaluate(y_true, y_pred, label):
     """성능 평가"""

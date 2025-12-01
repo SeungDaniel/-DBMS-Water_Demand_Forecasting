@@ -13,10 +13,26 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 
-# Font settings
-plt.rcParams['font.family'] = 'DejaVu Sans'
-plt.rcParams['axes.unicode_minus'] = False
+# 한글 폰트 설정
+import platform
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 sns.set_style("whitegrid")
+
+system_name = platform.system()
+
+if system_name == 'Darwin': # Mac
+    plt.rc('font', family='AppleGothic')
+elif system_name == 'Windows': # Windows
+    plt.rc('font', family='Malgun Gothic')
+else: # Linux
+    try:
+        plt.rc('font', family='NanumGothic')
+    except:
+        plt.rc('font', family='DejaVu Sans')
+
+plt.rcParams['axes.unicode_minus'] = False
 
 # Check GPU availability
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
